@@ -100,19 +100,17 @@ app.post('/auth/request-otp', async (req, res) => {
       });
       console.log(`[OTP] Email sent to ${contact}`);
     } else {
-      // No email configured — log OTP to Render console for testing
+      // No email configured — return OTP in response so user sees it on screen
       console.log(`[OTP DEV] Code for ${contact}: ${otp}`);
+      return res.json({ ok: true, dev_otp: otp });
     }
     res.json({ ok: true });
   } catch (err) {
     console.error('[OTP] Send error:', err.message);
     // Still return ok in dev so testing works; in production you'd return an error
-    if (process.env.NODE_ENV === 'production') {
-      res.status(500).json({ ok: false, error: 'Failed to send code. Check your number and try again.' });
-    } else {
-      console.log(`[OTP FALLBACK] Code for ${contact}: ${otp}`);
-      res.json({ ok: true });
-    }
+    // Return OTP in response when email not configured (testing only)
+    // Remove dev_otp from response once GMAIL_USER + GMAIL_PASS are set in Render
+    res.json({ ok: true, dev_otp: otp });
   }
 });
 
@@ -269,4 +267,3 @@ setInterval(() => { fetch(`http://localhost:${process.env.PORT||3001}/`).catch((
 // ─── START ────────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`PitchDAO backend on :${PORT}`));
- 
